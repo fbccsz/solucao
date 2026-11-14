@@ -6,6 +6,7 @@ clock: two runs write byte-identical files.  Writes one 1024x1024 PNG to
 $MAKEFUN_OUTPUT_DIR/entry.png (default /output/entry.png).
 
     python3 main.py            write the PNG
+    python3 main.py --check    measure every string and the grid, write nothing
 """
 import math
 import os
@@ -744,8 +745,86 @@ def encode():
             + chunk(b'IEND', b''))
 
 
+def check():
+    """Assert no drawn string overflows its box and the grid geometry adds up."""
+    errs = []
+    if len(STORIES) != 16:
+        errs.append('expected 16 stories, have %d' % len(STORIES))
+    if 2 * MARGIN + 4 * PANEL_W + 3 * GUTTER != W:
+        errs.append('panel widths and gutters do not span %d px' % W)
+    if GRID_TOP + 4 * PANEL_H + 3 * GUTTER != GRID_BOT:
+        errs.append('panel heights and gutters do not reach the grid foot')
+    if GRID_BOT + 6 > H - FOOT_H:
+        errs.append('grid does not stop above the footer')
+    for t in HEAD_LINES:
+        if tw(t, HEAD_K, HEAD_TRACK) > PANEL_W - 2 * PAD:
+            errs.append('headline %r does not fit at the shared style' % t)
+    if ART_H < 80:
+        errs.append('art box is only %d px tall' % ART_H)
+    if RULE_H + ART_H + GAP1 + KICK_H + GAP2 + HEAD_H + GAP3 != PANEL_H:
+        errs.append('panel strips do not add up to PANEL_H')
+    if KICK_Y < ART_Y + ART_H or HEAD_Y < KICK_Y + KICK_H:
+        errs.append('caption strips overlap the art box')
+    for s, k, w, x, y, bx, bw in TEXT_BOXES:
+        if w > bw:
+            errs.append('%r drawn %d px wide in a %d px box' % (s, w, bw))
+        if x < bx or x + w > bx + bw:
+            errs.append('%r spans %d..%d, box is %d..%d'
+                        % (s, x, x + w, bx, bx + bw))
+        if x < 0 or y < 0 or x + w > W or y + 7 * k > H:
+            errs.append('%r falls outside the canvas' % s)
+        if not s.strip():
+            errs.append('empty string drawn')
+        missing = [c for c in s.upper() if c not in GLYPHS]
+        if missing:
+            errs.append('%r has no glyph for %r' % (s, missing))
+
+    # every caption's ink must sit inside its own band, clear of the art
+    for i in range(16):
+        sx, sy = panel_xy(i)
+        art_b, kick_t = sy + ART_Y + ART_H, sy + KICK_Y
+        kick_b, head_t = kick_t + KICK_H, sy + HEAD_Y - GAP2
+        head_b = sy + HEAD_Y + HEAD_H
+        if not (art_b <= kick_t and kick_b <= head_t):
+            errs.append('panel %d: art, kicker and headline bands overlap' % i)
+        if head_b > sy + PANEL_H:
+            errs.append('panel %d: headline band runs off the panel' % i)
+        for s, k, w, x, y, bx, bw in TEXT_BOXES:
+            if not (sx <= x < sx + PANEL_W and sy <= y < sy + PANEL_H):
+                continue
+            bottom = y + 7 * k
+            if y < kick_t:
+                errs.append('panel %d: %r starts in the art box' % (i, s))
+            if bottom > head_b:
+                errs.append('panel %d: %r runs past the headline band' % (i, s))
+    # panel boxes must not touch each other
+    for i in range(16):
+        ax, ay = panel_xy(i)
+        for j in range(i + 1, 16):
+            bx2, by2 = panel_xy(j)
+            if (ax < bx2 + PANEL_W and bx2 < ax + PANEL_W
+                    and ay < by2 + PANEL_H and by2 < ay + PANEL_H):
+                errs.append('panels %d and %d overlap' % (i, j))
+    png = encode()
+    if len(png) > 1048576:
+        errs.append('png is %d bytes, cap is 1048576' % len(png))
+    print('strings drawn and measured: %d' % len(TEXT_BOXES))
+    print('panel %dx%d, art %dx%d, grid %d,%d..%d,%d'
+          % (PANEL_W, PANEL_H, PANEL_W, ART_H, MARGIN, GRID_TOP,
+             MARGIN + 4 * PANEL_W + 3 * GUTTER, GRID_BOT))
+    print('png %d bytes' % len(png))
+    if errs:
+        for e in errs:
+            print('FAIL:', e)
+        raise AssertionError('%d layout problems' % len(errs))
+    print('OK: no string overflows its box, grid geometry adds up')
+
+
 def main():
     build()
+    if '--check' in sys.argv:
+        check()
+        return
     png = encode()
     assert len(png) <= 1048576, len(png)
     out = Path(os.environ.get('MAKEFUN_OUTPUT_DIR', '/output'))
