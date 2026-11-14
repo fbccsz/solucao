@@ -223,14 +223,22 @@ def kick_style(s, bw):
     raise AssertionError('kicker %r cannot fit %dpx' % (s, bw))
 
 
-def label(bx, y, s, bw, kmax=10, kmin=2, c='ink', track=6, align='l', k=None):
-    """Fit s inside (bx, bw), draw it, and record the exact box it occupies."""
+def label(bx, y, s, bw, kmax=10, kmin=2, c='ink', track=6, align='l', k=None,
+          shadow=None, soff=(4, 4)):
+    """Fit s inside (bx, bw), draw it, and record the exact box it occupies.
+
+    shadow, if given, is a colour; a hard copy of s is laid down first, offset
+    by soff, so the lettering carries a deliberate shadow rather than looking
+    misregistered.
+    """
     if k is None:
         k = fit(s, bw, kmax, kmin, track)
     w = tw(s, k, track)
     if w > bw:
         raise AssertionError('%r is %dpx wide, box is %dpx' % (s, w, bw))
     x = bx + (bw - w) // 2 if align == 'c' else (bx + bw - w if align == 'r' else bx)
+    if shadow is not None:
+        txt(x + soff[0], y + soff[1], s, k, shadow, track)
     txt(x, y, s, k, c, track)
     TEXT_BOXES.append((s, k, w, x, y, bx, bw))
     return k
@@ -366,29 +374,64 @@ def v_envoys(w, h):
 
 
 def v_ship_down(w, h):
-    """New Orleans: a cruise ship sank with 130 aboard, all survived."""
-    wl = int(h * 0.50)
+    """New Orleans: a cruise ship sank with 130 aboard, all survived.
+
+    Read at 71 px: one cream ship silhouette - a stepped profile with a high
+    stern house, a low foredeck, a raked bow and a red funnel - listing with
+    her bow down through a hard waterline drawn across the panel; the smaller
+    tanker that hit her riding level on the water to the right; a life ring.
+    The silhouette is one polygon, rotated as a whole, so she reads as a ship
+    and not as a stack of stripes.  Nothing is thinner than 4 px.
+    """
+    wl = 54                       # the waterline, straight across the panel
+    cx, cy, ang = 76, 52, 0.20    # the list: bow (right) driven down
+    ca, sa = math.cos(ang), math.sin(ang)
+
+    def rot(pts):
+        return [(cx + x * ca - y * sa, cy + x * sa + y * ca) for x, y in pts]
+
     rect(0, 0, w, h, 'night2')
-    rect(0, 0, w, int(h * 0.14), 'night')
-    # hull: bow high to the right, stern already down under the waterline
-    bar(16, int(h * 0.80), 208, int(h * 0.28), 22, 'cream')
-    bar(16, int(h * 0.86), 206, int(h * 0.34), 8, 'red')
-    # a deck and a funnel, on the same tilt
-    bar(66, int(h * 0.64), 160, int(h * 0.42), 16, 'cream')
-    for i in range(5):
-        rect(84 + i * 15, int(h * 0.58) - i * 4, 8, 7, 'night2')
-    bar(140, int(h * 0.42), 148, int(h * 0.20), 9, 'red2')
-    stroke(70, int(h * 0.64), 64, int(h * 0.38), 2, 'slate')
-    # the water closes over her
-    rect(0, wl + 12, w, h, 'sea')
-    poly([(0, wl + 12), (w, wl + 4), (w, wl + 12), (0, wl + 20)], 'sea2')
-    # a life ring and a launch full of survivors
-    ring(w - 38, h - 22, 18, 7, 'gold')
-    rect(w - 38, h - 25, 11, 6, 'red')
-    rect(w - 41, h - 41, 6, 11, 'red')
-    poly([(44, h - 30), (112, h - 34), (116, h - 18), (40, h - 14)], 'orange')
-    for i in range(2):
-        disc(62 + i * 20, h - 42, 6, 'stone')
+    rect(0, 0, w, 10, 'night')
+    rect(0, wl, w, h - wl, 'sea')
+
+    # hull, tall stern house, low foredeck and a raked bow: one silhouette
+    ship = [(-60, 12), (-60, -26), (-20, -26), (-20, -6), (40, -6),
+            (58, 0), (60, 10)]
+    boot = [(-60, 12), (-60, 4), (58, 2), (58, 8), (60, 10)]
+    funnel = [(-48, -26), (-32, -26), (-30, -40), (-46, -40)]
+    wnd = [[(-54 + i * 9, -22), (-48 + i * 9, -22),
+            (-48 + i * 9, -12), (-54 + i * 9, -12)] for i in range(3)]
+
+    def draw_ship(hull_c, boot_c, funnel_c, win_c):
+        poly(rot(ship), hull_c)
+        poly(rot(boot), boot_c)
+        poly(rot(funnel), funnel_c)
+        for wp in wnd:
+            poly(rot(wp), win_c)
+
+    # clip() and origin() work in page coordinates, so add the art-box origin
+    ox, oy = ORIGIN
+    # above the waterline: her true colours
+    clip(ox, oy, w, wl)
+    draw_ship('cream', 'red', 'red2', 'night2')
+    # below it: the same silhouette, dim through the water
+    clip(ox, oy + wl, w, h - wl)
+    draw_ship('sea2', 'red2', 'slate', 'sea')
+    clip(ox, oy, w, h)          # restore the art box
+    # the surface line, right across the panel
+    rect(0, wl, w, 3, 'stone')
+
+    # the tanker that hit her: smaller, level, on the water to the right
+    poly([(176, 40), (238, 44), (238, 60), (172, 56)], 'slate')
+    rect(186, 29, 26, 12, 'smoke')
+    rect(193, 35, 8, 6, 'ink')
+    rect(210, 23, 4, 17, 'smoke')
+    # a life ring, floated clear
+    ring(22, 78, 12, 6, 'gold')
+    ring(22, 78, 12, 3, 'red')
+    # water marks
+    rect(104, 78, 38, 4, 'sea2')
+    rect(62, 88, 42, 4, 'sea2')
 
 
 def v_flights(w, h):
@@ -438,28 +481,41 @@ def v_bus(w, h):
 
 
 def v_rubble(w, h):
-    """Nairobi: a building under construction partly collapsed, 6 killed."""
-    rect(0, 0, w, h, 'stone')
-    rect(0, 0, w, int(h * 0.30), 'night2')
-    # the standing half: a grid of floor slabs and window voids
-    rect(2, 0, 62, int(h * 0.86), 'concr')
-    for r in range(4):
-        for cc in range(2):
-            rect(9 + cc * 26, 7 + r * 20, 15, 12, 'night3')
-    # the collapsed half: slabs sheared off and dropped, one still leaning
-    poly([(64, int(h * 0.86)), (64, int(h * 0.44)), (150, int(h * 0.16)),
-          (196, int(h * 0.30)), (110, int(h * 0.60)), (110, int(h * 0.86))], 'concr2')
-    for i in range(3):
-        poly([(70 + i * 26, int(h * 0.86)), (70 + i * 26, int(h * 0.52) + i * 6),
-              (150 + i * 8, int(h * 0.30) + i * 6), (156 + i * 8, int(h * 0.40) + i * 6),
-              (76 + i * 26, int(h * 0.62) + i * 6), (76 + i * 26, int(h * 0.86))],
-             'concr')
-    # the pile, and the rescuer's flag on it
-    poly([(0, h), (0, int(h * 0.90)), (54, int(h * 0.84)), (118, int(h * 0.98)),
-          (w, int(h * 0.90)), (w, h)], 'concr2')
-    poly([(96, int(h * 0.92)), (126, int(h * 0.78)), (156, int(h * 0.96))], 'stone')
-    stroke(210, int(h * 0.86), 210, int(h * 0.30), 3, 'ink')
-    rect(210, int(h * 0.30), 30, 18, 'red')
+    """Nairobi: a building under construction partly collapsed, 6 killed.
+
+    Read at 71 px: a light concrete frame of slabs and columns with black
+    window voids, its bottom right corner sheared away on a clean diagonal,
+    a slab still leaning off the break, a dark wedge of rubble at its foot,
+    and a small crane arm on the right.
+    """
+    rect(0, 0, w, h, 'night2')          # sky
+    gnd = h - 12
+    # the ground
+    rect(0, gnd, w, h - gnd, 'stone')
+    # the frame: four storeys of thick slab and thick column, black voids
+    for y in (2, 24, 46, 68):
+        rect(6, y, 138, 8, 'concr')
+    for x in (6, 52, 98, 136):
+        rect(x, 2, 9, gnd - 2, 'concr')
+    for r in range(3):
+        for c in (0, 1):
+            rect(19 + c * 46, 12 + r * 22, 30, 11, 'night3')
+    # the top right corner has sheared away: a big clean diagonal bite
+    poly([(88, 2), (144, 2), (144, 62), (88, 30)], 'night2')
+    # a floor slab left hanging across the bite, tilted down
+    poly([(96, 40), (140, 52), (136, 64), (92, 52)], 'concr')
+    poly([(96, 40), (140, 52), (139, 56), (95, 44)], 'concr2')
+    # the rubble heap under the bite
+    poly([(70, gnd), (178, gnd), (156, 66), (118, 56), (84, 72)], 'concr2')
+    poly([(92, gnd), (162, gnd), (146, 72), (108, 66)], 'concr')
+    rect(64, gnd - 14, 17, 14, 'concr')     # chunks off the pile
+    rect(160, gnd - 11, 15, 11, 'concr')
+    # a tower crane on the right: tall mast, jib reaching over the building
+    rect(204, 4, 9, gnd - 4, 'ink')
+    rect(116, 10, 122, 7, 'ink')            # jib
+    rect(216, 6, 16, 16, 'ink')             # counterweight
+    rect(130, 17, 3, 16, 'ink')             # hook line
+    rect(122, 33, 17, 12, 'red')            # the load
 
 
 def v_pact(w, h):
@@ -678,11 +734,16 @@ def panel_xy(i):
 
 def masthead():
     rect(0, 0, W, MAST_H, 'ink')
+    # The dateline and the line beside it carry no shadow: at k=3 a 4 px offset
+    # is a fifth of the letter height and reads as a smudge, not a shadow.
     label(MARGIN, 9, 'FRIDAY 13 NOVEMBER 2026', 426, 3, 3, 'gold')
     label(470, 9, '16 STORIES, 4 CONTINENTS', W - MARGIN - 470, 3, 3,
           'stone', align='r')
+    # "THE WORLD TODAY" gets one hard shadow, offset 4 px down and right, in a
+    # mid tone: clearly darker than the cream letters, clearly lighter than the
+    # ink behind them.  One deliberate shadow, not a misregistered second copy.
     label(MARGIN, 38, 'THE WORLD TODAY', W - 2 * MARGIN, 8, 6, 'cream',
-          align='c')
+          align='c', shadow='slate', soff=(4, 4))
     rect(0, MAST_H - 10, W, 10, 'gold')
     rect(0, MAST_H - 10, W, 4, 'red2')
 
@@ -765,6 +826,13 @@ def check():
         errs.append('panel strips do not add up to PANEL_H')
     if KICK_Y < ART_Y + ART_H or HEAD_Y < KICK_Y + KICK_H:
         errs.append('caption strips overlap the art box')
+    # the masthead shadow must stay under the word, on the ink, clear of the
+    # gold rule at the foot of the masthead
+    _k = fit('THE WORLD TODAY', W - 2 * MARGIN, 8, 6)
+    shadow_b = 38 + 4 + 7 * _k
+    if shadow_b > MAST_H - 10:
+        errs.append('masthead shadow reaches the gold rule (%d > %d)'
+                    % (shadow_b, MAST_H - 10))
     for s, k, w, x, y, bx, bw in TEXT_BOXES:
         if w > bw:
             errs.append('%r drawn %d px wide in a %d px box' % (s, w, bw))

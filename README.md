@@ -18,7 +18,7 @@ python3 main.py --check                    # measures the page, writes nothing
 ```
 
 With `MAKEFUN_OUTPUT_DIR` unset it writes `/output/entry.png`. Output is a
-single 1024 x 1024 PNG, about 28 KiB, well under the 1 MiB cap, and a run takes
+single 1024 x 1024 PNG, about 27 KiB, well under the 1 MiB cap, and a run takes
 about 0.3 s on one CPU.
 
 ## What the picture shows
@@ -28,6 +28,12 @@ CONTINENTS" - and then a 4 x 4 grid of equal panels. Each panel is, top to
 bottom: an accent rule, a flat vignette, a place kicker, and a two-line
 headline in white caps on a solid dark band. A thin footer carries the source
 list and the line "DRAWN BY PROGRAM, NOT PHOTOGRAPHS".
+
+"THE WORLD TODAY" carries one hard shadow, offset 4 px right and down, in a
+slate tone that is clearly darker than the cream letters and clearly lighter
+than the ink behind them. It is drawn deliberately, once, behind the word; the
+dateline and the line beside it carry no shadow, because at their size a 4 px
+offset reads as a smudge rather than a shadow.
 
 Equal panels are deliberate. Breadth is the point: a reader who missed the day
 should see at a glance that it was not one story in one country.
@@ -45,10 +51,10 @@ in. No detail, number or attribution is invented.
 | 3 | Odesa, Ukraine | ODESA HIT / AGAIN | A dark skyline lit by windows, under two drone trails |
 | 4 | Washington | NVIDIA / IN CRISIS | A cracked microchip and a falling red arrow |
 | 5 | Kyiv | ENVOYS / IN TALKS | Three flags (US, Ukraine, EU) over two delegations at a table |
-| 6 | New Orleans | SHIP DOWN / ALL SAFE | A listed cruise hull cut by the waterline, a life ring |
+| 6 | New Orleans | SHIP DOWN / ALL SAFE | A listed cruise ship cut by the waterline, the tanker beside her, a life ring |
 | 7 | USA / FAA | FLIGHTS / HALTED | An airliner fin beside a control tower, crossed by a stop bar |
 | 8 | Golaghat, Assam | BUS CRASH / 26 DEAD | A bus on its side and a truck's nose, in dust |
-| 9 | Nairobi | BUILDING / COLLAPSE | A standing wall of floor slabs beside a sheared, fallen half |
+| 9 | Nairobi | BUILDING / COLLAPSE | A concrete frame with a sheared corner, rubble, a tower crane |
 | 10 | Istanbul | DEFENCE / PACT | The Qatari and Turkish flags over a signed sheet and a clasp |
 | 11 | Guatemala | US LISTS / CARTELS | A listed document with a red stamp over it |
 | 12 | London | ACTOR / PROBED | A police light bar, its beams, and a badge |
@@ -127,8 +133,8 @@ produce byte-identical files:
 ```
 $ MAKEFUN_OUTPUT_DIR=/tmp/a python3 main.py && MAKEFUN_OUTPUT_DIR=/tmp/b python3 main.py
 $ sha256sum /tmp/a/entry.png /tmp/b/entry.png
-3a1934717a0a7e7872db2475c4a1561e7ebf817e64447d226890bb45b7615290  /tmp/a/entry.png
-3a1934717a0a7e7872db2475c4a1561e7ebf817e64447d226890bb45b7615290  /tmp/b/entry.png
+24e688e8253f359dad0b5ef062ce3430b76c7d095bae21695a67af5f22aec464  /tmp/a/entry.png
+24e688e8253f359dad0b5ef062ce3430b76c7d095bae21695a67af5f22aec464  /tmp/b/entry.png
 ```
 
 The PNG is written in one pass: a single `IDAT` chunk of filter-0 scanlines,
@@ -138,4 +144,5 @@ with correct CRCs on every chunk, and no ancillary chunks.
 
 - `main.py` - the program.
 - `entry.png` - the rendered image at the last commit that updated it.
+- `.gitignore` - ignores `__pycache__/` and `*.pyc`.
 - `LICENSE` - MIT.
