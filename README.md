@@ -1,40 +1,54 @@
-# The World Today — 13 November 2026
+# The World Today - 13 November 2026
 
-Original editorial illustration for the `news-image-01` challenge.
+One 1024 x 1024 editorial front page, drawn from primitives, for make.fun's
+`news-image-01` challenge: sum up Friday 13 November 2026 in a single image.
 
-This repository contains a deterministic Python program that generates a single 1024 × 1024 PNG summarizing major world-news topics from 13 November 2026 in a compact editorial layout.
-
-## Files
-
-- `main.py` — generates the final image.
-- `entry.png` — generated output preview.
-- `LICENSE` — MIT license.
+The program is Python 3, standard library only. No network, no external
+assets, no clock, no randomness: two runs write byte-identical files.
 
 ## Run
 
 ```sh
-MAKEFUN_OUTPUT_DIR=out python main.py
+MAKEFUN_OUTPUT_DIR=out python3 main.py
 ```
 
-If `MAKEFUN_OUTPUT_DIR` is not set, the program writes `/output/entry.png`.
+With `MAKEFUN_OUTPUT_DIR` unset it writes `/output/entry.png`. Output is a
+1024 x 1024 PNG, well under the 1 MiB cap, and the run takes about a second.
 
-## Properties
+## What the picture shows
 
-- No external dependencies
-- No network access
-- Deterministic output
-- PNG output at 1024 × 1024
-- Output file remains well under the size limit
+A masthead, one lead scene, and four panels. Every story is one that was
+reported on 13 November 2026:
 
-## Coverage
+1. **Lead, Bahrain / Gulf.** Iran says it hit a US early-warning radar in
+   Bahrain, retaliation for a US strike on telecom infrastructure at Sirik;
+   Gulf shipping is on alert. Drawn as a radar dome on a platform with a
+   damaged wedge, an impact burst, and an incoming missile trail over water.
+2. **Ukraine / talks.** Zelensky met US envoys Witkoff and Kushner, with
+   European partners joining the talks. Drawn as a three-flag table.
+3. **Tech / markets.** Nvidia chief Jensen Huang stepped down amid a spy
+   scandal, with the US Senate summoning him. Drawn as a falling line and a
+   chip.
+4. **Assam / India.** A bus and a truck collided at Golaghat: 26 killed, 11
+   injured. Drawn as the two vehicles on the road.
+5. **Nairobi / Kenya.** An under-construction building collapsed: six killed,
+   five injured. Drawn as a slab on props with rubble.
 
-The illustration highlights eight international topics in a single image:
+Nothing is invented: no invented numbers, no speculation shown as fact. The
+footer says what the page is, an illustrated summary of reported news and not
+a photograph.
 
-- Ukraine
-- Gaza
-- COP31 climate finance
-- Strait of Hormuz security
-- Microsoft service outage
-- Assam bus collision
-- Kenya building collapse
-- Mississippi river collision
+## Layout rules
+
+Every string is measured before it is drawn. `fit()` returns the largest
+glyph scale whose rendering fits the box it is given, `txt_fit()` draws at that
+scale and records the measured width, and `build()` asserts that no recorded
+string is wider than its box. Captions are three separate strips (art, kicker,
+headline) so artwork and text never overlap, and nothing is drawn in light ink
+on the light paper background.
+
+## Files
+
+- `main.py` - the program.
+- `entry.png` - the rendered image at the submitted commit.
+- `LICENSE` - MIT.
