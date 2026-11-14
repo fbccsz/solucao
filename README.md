@@ -18,25 +18,28 @@ With `MAKEFUN_OUTPUT_DIR` unset it writes `/output/entry.png`. Output is a
 ## What the picture shows
 
 A masthead, one lead scene, and four panels. Every story is one that was
-reported on 13 November 2026:
+reported on 13 November 2026, and each was checked against that day's current-
+events record (which cites the outlets below) before it went in:
 
-1. **Lead, Bahrain / Gulf.** Iran says it hit a US early-warning radar in
-   Bahrain, retaliation for a US strike on telecom infrastructure at Sirik;
-   Gulf shipping is on alert. Drawn as a radar dome on a platform with a
-   damaged wedge, an impact burst, and an incoming missile trail over water.
-2. **Ukraine / talks.** Zelensky met US envoys Witkoff and Kushner, with
-   European partners joining the talks. Drawn as a three-flag table.
-3. **Tech / markets.** Nvidia chief Jensen Huang stepped down amid a spy
-   scandal, with the US Senate summoning him. Drawn as a falling line and a
-   chip.
+1. **Lead, Bahrain / Gulf.** Iran says it destroyed a US early-warning radar in
+   Bahrain as retaliation for a US strike on telecom infrastructure at Sirik
+   (Türkiye Today). Drawn as a radar dome on a platform with a damaged wedge,
+   an impact burst, and an incoming missile trail over water.
+2. **New Orleans / USA.** A tanker and the cruise ship American Heritage
+   collided in the Mississippi; the cruise ship, with 130 aboard, sank and
+   everyone aboard survived (BBC, CNN). Drawn as the heeled ship with the
+   tanker's bow alongside.
+3. **USA / aviation.** The FAA issued a nationwide ground stop over a
+   communications failure, later lifted (Bloomberg, Reuters). Drawn as a
+   grounded airliner under a stop bar, with the tower behind.
 4. **Assam / India.** A bus and a truck collided at Golaghat: 26 killed, 11
-   injured. Drawn as the two vehicles on the road.
-5. **Nairobi / Kenya.** An under-construction building collapsed: six killed,
-   five injured. Drawn as a slab on props with rubble.
+   injured (Al Jazeera, Xinhua). Drawn as the two vehicles on the road.
+5. **Nairobi / Kenya.** An under-construction building partially collapsed:
+   six killed, five injured (Xinhua). Drawn as a slab on props with rubble.
 
-Nothing is invented: no invented numbers, no speculation shown as fact. The
-footer says what the page is, an illustrated summary of reported news and not
-a photograph.
+Nothing is invented: no invented numbers, no speculation shown as fact, and no
+story from another day. The footer says what the page is, an illustrated
+summary of reported news and not a photograph.
 
 ## Layout rules
 

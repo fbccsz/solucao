@@ -276,6 +276,82 @@ def scene_gulf(w, h):
 
 
 # --------------------------------------------------------------- panel scenes
+def scene_ship(w, h):
+    """A heeled cruise ship going under, a tanker's bow alongside."""
+    wl = int(h * 0.50)
+    rect(0, 0, w, wl, 'night2')
+    rect(0, 0, w, int(wl * 0.55), 'night')
+    # far bank, riverside blocks
+    rect(0, wl - 8, w, 8, 'concr2')
+    for i in range(5):
+        rect(14 + i * 94, wl - 30 - (i % 3) * 7, 58, 22 + (i % 3) * 7, 'night3')
+    # water
+    rect(0, wl, w, h - wl, 'sea')
+    rect(0, wl, w, 3, 'slate')
+    # her hull, heeled, bow to the left
+    bx, by = 26, wl - 10
+    poly([(bx, by), (bx + 246, by - 24), (bx + 282, by + 6),
+          (bx + 258, by + 28), (bx + 8, by + 32)], 'cream')
+    poly([(bx + 2, by + 16), (bx + 262, by + 8), (bx + 258, by + 26),
+          (bx + 10, by + 32)], 'red')
+    # two decks and a funnel on the same tilt
+    poly([(bx + 34, by - 8), (bx + 196, by - 28), (bx + 202, by - 8),
+          (bx + 40, by + 12)], 'cream')
+    poly([(bx + 62, by - 16), (bx + 168, by - 34), (bx + 172, by - 20),
+          (bx + 66, by - 2)], 'stone')
+    rect(bx + 192, by - 48, 16, 24, 'red2')
+    for i in range(7):
+        rect(bx + 52 + i * 20, by - 10 - i * 2, 10, 6, 'night2')
+    # the water takes the lower hull
+    poly([(0, wl + 8), (w, wl - 2), (w, h), (0, h)], 'sea')
+    for i, x in enumerate(range(0, w, 71)):
+        rect(x + (i * 23) % 41, wl + 10 + (i * 17) % 34, 46, 3, 'sea2')
+    # the tanker's bow, entering from the right
+    poly([(w, wl - 34), (w - 104, wl - 24), (w - 122, wl + 12), (w, wl + 18)],
+         'night3')
+    poly([(w, wl + 4), (w - 112, wl + 2), (w - 122, wl + 12), (w, wl + 18)],
+         'red2')
+    # lifeboats and a launch
+    for i, lx in enumerate((46, 116, 186)):
+        rect(lx, wl + 26 + i * 9, 40, 8, 'gold')
+    rect(w * 0.28, wl + 56, 46, 9, 'stone')
+    rect(w * 0.28 + 12, wl + 48, 10, 8, 'red')
+
+
+def scene_faa(w, h):
+    """A grounded airliner on the apron, a ground-stop bar across it."""
+    rect(0, 0, w, h, 'night3')
+    rect(0, 0, w, int(h * 0.44), 'night')
+    # control tower, left
+    tx = 54
+    rect(tx - 9, 26, 18, 72, 'stone')
+    rect(tx - 27, 12, 54, 30, 'cream')
+    rect(tx - 21, 18, 42, 16, 'night2')
+    rect(tx - 27, 12, 54, 3, 'gold')
+    stroke(tx, 12, tx, 2, 3, 'smoke')
+    # apron
+    rect(0, int(h * 0.74), w, h, 'concr2')
+    for i in range(5):
+        rect(150 + i * 42, int(h * 0.82), 24, 4, 'gold')
+    # airliner, side view, nose right
+    fy = int(h * 0.42)
+    rect(118, fy, 272, 32, 'cream')
+    poly([(390, fy), (418, fy + 12), (390, fy + 32)], 'cream')
+    poly([(112, fy - 36), (140, fy - 36), (150, fy), (112, fy)], 'cream')
+    poly([(102, fy + 18), (150, fy + 18), (166, fy + 32), (102, fy + 32)],
+         'cream')
+    poly([(206, fy + 18), (258, fy + 18), (238, fy + 54), (188, fy + 54)],
+         'stone')
+    rect(198, fy + 38, 36, 15, 'slate')
+    for i in range(11):
+        rect(160 + i * 19, fy + 9, 8, 7, 'night2')
+    rect(172, fy + 32, 8, 16, 'slate')
+    rect(336, fy + 32, 8, 16, 'slate')
+    # the ground stop
+    stroke(128, fy - 44, 424, fy + 62, 15, 'red')
+    stroke(128, fy - 44, 424, fy + 62, 7, 'red2')
+
+
 def scene_talks(w, h):
     """Three-flag negotiating table."""
     rect(0, 0, w, h, 'sand')
@@ -431,8 +507,8 @@ FOOTER_H = 56
 
 STORIES = [
     # (scene, accent, kicker, line1, line2)
-    (scene_talks, 'blue', 'UKRAINE / TALKS', 'ZELENSKY', 'MEETS ENVOYS'),
-    (scene_chip, 'teal', 'TECH / MARKETS', 'NVIDIA', 'CHIEF QUITS'),
+    (scene_ship, 'blue', 'NEW ORLEANS / USA', 'SHIP SINKS', 'ALL 130 SAFE'),
+    (scene_faa, 'teal', 'USA / AVIATION', 'US FLIGHTS', 'GROUNDED'),
     (scene_bus, 'red', 'ASSAM / INDIA', 'BUS CRASH', '26 KILLED'),
     (scene_rubble, 'gold', 'NAIROBI / KENYA', 'BUILDING', 'COLLAPSE'),
 ]
@@ -475,9 +551,8 @@ def lead_block():
     txt_fit(x + 30, cap_y + 34 + k * 7 + 6, 'A US RADAR', mw, k, 4, 'cream')
 
     rx = x + w - 30
-    txt_r(rx, cap_y + 42, 'SHIPPING ON ALERT', 3, 'stone')
-    txt_r(rx, cap_y + 68, 'A RETALIATION', 3, 'stone')
-    txt_r(rx, cap_y + 94, 'GULF ON EDGE', 3, 'slate')
+    txt_r(rx, cap_y + 42, 'RETALIATION FOR', 3, 'stone')
+    txt_r(rx, cap_y + 68, 'THE SIRIK STRIKE', 3, 'stone')
 
 
 def panel(i, sx, sy, pw, ph):
